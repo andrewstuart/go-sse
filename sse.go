@@ -14,11 +14,16 @@ const (
 	dName = "data"
 )
 
+var (
+	//ErrNilChan will be returned by Notify if it is passed a nil channel
+	ErrNilChan = fmt.Errorf("nil channel given")
+)
+
 //Client is the default client used for requests.
 var Client = &http.Client{}
 
 func liveReq(verb, uri string, body io.Reader) (*http.Request, error) {
-	req, err := http.NewRequest(verb, uri, body)
+	req, err := GetReq(verb, uri, body)
 	if err != nil {
 		return nil, err
 	}
@@ -35,18 +40,26 @@ type Event struct {
 	Data io.Reader
 }
 
+//GetReq is a function to return a single request. It will be used by notify to
+//get a request and can be replaces if additional configuration is desired on
+//the request. The "Accept" header will necessarily be overwritten.
+var GetReq = func(verb, uri string, body io.Reader) (*http.Request, error) {
+	return http.NewRequest(verb, uri, body)
+}
+
 //Notify takes a uri and channel, and will send an Event down the channel when
 //recieved.
 func Notify(uri string, evCh chan *Event) error {
+	if evCh == nil {
+		return ErrNilChan
+	}
 
 	req, err := liveReq("GET", uri, nil)
-
 	if err != nil {
 		return fmt.Errorf("error getting sse request: %v", err)
 	}
 
 	res, err := Client.Do(req)
-
 	if err != nil {
 		return fmt.Errorf("error performing request for %s: %v", uri, err)
 	}
@@ -79,9 +92,9 @@ func Notify(uri string, evCh chan *Event) error {
 			switch string(spl[0]) {
 			case eName:
 				currEvent = &Event{URI: uri}
-				currEvent.Type = string(spl[1])
+				currEvent.Type = string(bytes.TrimSpace(spl[1]))
 			case dName:
-				currEvent.Data = bytes.NewBuffer(spl[1])
+				currEvent.Data = bytes.NewBuffer(bytes.TrimSpace(spl[1]))
 				evCh <- currEvent
 			}
 		}
