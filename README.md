@@ -1,6 +1,8 @@
+[![GoDoc](https://godoc.org/astuart.co/go-sse?status.svg)](https://godoc.org/astuart.co/go-sse)
+
 # sse
 --
-    import "github.com/andrewstuart/go-sse"
+    import "astuart.co/go-sse"
 
 
 ## Usage
@@ -29,10 +31,12 @@ request. The "Accept" header will necessarily be overwritten.
 #### func  Notify
 
 ```go
-func Notify(uri string, evCh chan *Event) error
+func Notify(uri string, evCh chan<- *Event) error
 ```
-Notify takes a uri and channel, and will send an Event down the channel when
-recieved.
+Notify takes the uri of an SSE stream and channel, and will send an Event down
+the channel when recieved, until the stream is closed. It will then close the
+stream. This is blocking, and so you will likely want to call this in a new
+goroutine (via `go Notify(..)`)
 
 #### type Event
 
