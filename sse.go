@@ -1,4 +1,4 @@
-package sse
+package sse // import astuart.co/go-sse
 
 import (
 	"bufio"
