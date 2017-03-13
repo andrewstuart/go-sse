@@ -90,9 +90,9 @@ func Notify(uri string, evCh chan<- *Event) error {
 			continue
 		}
 
+		currEvent = &Event{URI: uri}
 		switch string(spl[0]) {
 		case eName:
-			currEvent = &Event{URI: uri}
 			currEvent.Type = string(bytes.TrimSpace(spl[1]))
 		case dName:
 			currEvent.Data = bytes.NewBuffer(bytes.TrimSpace(spl[1]))
