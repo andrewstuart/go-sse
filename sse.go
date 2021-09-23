@@ -71,7 +71,7 @@ func Notify(uri string, evCh chan<- *Event) error {
 
 	delim := []byte{':', ' '}
 
-	var currEvent *Event
+	currEvent := &Event{}
 
 	for {
 		bs, err := br.ReadBytes('\n')
@@ -90,7 +90,7 @@ func Notify(uri string, evCh chan<- *Event) error {
 			continue
 		}
 
-		currEvent = &Event{URI: uri}
+		currEvent.URI = uri
 		switch string(spl[0]) {
 		case eName:
 			currEvent.Type = string(bytes.TrimSpace(spl[1]))
